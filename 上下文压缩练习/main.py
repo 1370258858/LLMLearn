@@ -1,10 +1,12 @@
-from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import (
+from langchain_classic.retrievers.contextual_compression import (
+    ContextualCompressionRetriever,
+)
+from langchain_classic.retrievers.document_compressors import (
     LLMChainExtractor,    # 步骤1：LLM 重写精简文档
     LLMChainFilter,       # 步骤2：LLM 判断相关性
-    EmbeddingsRedundantFilter,  # 步骤3：向量相似度去重+排序
     DocumentCompressorPipeline  # 把 3 步串成流水线
 )
+from langchain_classic.document_transformers.embeddings_redundant_filter import EmbeddingsRedundantFilter  # 步骤3：向量相似度去重+排序
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_text_splitters import CharacterTextSplitter
