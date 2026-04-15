@@ -8,7 +8,8 @@ from langchain_classic.retrievers.document_compressors import (
 )
 from langchain_classic.document_transformers.embeddings_redundant_filter import EmbeddingsRedundantFilter  # 步骤3：向量相似度去重+排序
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_openai import DashScopeEmbeddings, ChatOpenAI
+from langchain_community.embeddings import DashScopeEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_core.documents import Document
 
@@ -29,14 +30,21 @@ documents = [
 # ----------------------
 # 2. 构建向量库（FAISS）
 # ----------------------
-embeddings = OpenAIEmbeddings(model="text-embedding-v4")
+embeddings = DashScopeEmbeddings(model="text-embedding-v4", dashscope_api_key = "sk-a073a0942a91406e85604f9a5f8e7664")
 vectorstore = FAISS.from_documents(documents, embeddings)
 base_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})  # 先召回 5 条
 
 # ----------------------
 # 3. 定义 3 步压缩流水线（核心！）
 # ----------------------
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+# llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+llm = ChatOpenAI(
+            model_name="text-embedding-v4",
+            openai_api_key="sk-a073a0942a91406e85604f9a5f8e7664",
+            openai_api_base="https://dashscope.aliyuncs.com/compatible-mode/v1",
+            temperature=0,
+            extra_body={"enable_thinking": False},
+        )
 
 # 步骤1：LLM 把文档精简，只保留核心内容
 extractor = LLMChainExtractor.from_llm(llm)
