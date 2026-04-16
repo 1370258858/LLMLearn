@@ -1,3 +1,4 @@
+#这是一个可以直接运行的版本
 from langchain_classic.retrievers.contextual_compression import (
     ContextualCompressionRetriever,
 )
@@ -6,11 +7,11 @@ from langchain_classic.retrievers.document_compressors import (
     LLMChainFilter,       # 步骤2：LLM 判断相关性
     DocumentCompressorPipeline  # 把 3 步串成流水线
 )
-from langchain_classic.document_transformers.embeddings_redundant_filter import EmbeddingsRedundantFilter  # 步骤3：向量相似度去重+排序
+# 正确 ✅
+from langchain_community.document_transformers.embeddings_redundant_filter import EmbeddingsRedundantFilter
 from langchain_community.vectorstores import FAISS
-from langchain_openai import DashScopeEmbeddings, ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_community.embeddings import DashScopeEmbeddings
-from langchain_text_splitters import CharacterTextSplitter
 from langchain_core.documents import Document
 
 # ----------------------
@@ -30,7 +31,8 @@ documents = [
 # ----------------------
 # 2. 构建向量库（FAISS）
 # ----------------------
-embeddings = DashScopeEmbeddings(model="text-embedding-v4", dashscope_api_key = "sk-a073a0942a91406e85604f9a5f8e7664")
+embeddings = DashScopeEmbeddings(model="text-embedding-v4",
+    dashscope_api_key="sk-a073a0942a91406e85604f9a5f8e7664" )
 vectorstore = FAISS.from_documents(documents, embeddings)
 base_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})  # 先召回 5 条
 
@@ -39,7 +41,7 @@ base_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})  # 先召回 5
 # ----------------------
 # llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 llm = ChatOpenAI(
-            model_name="text-embedding-v4",
+            model_name="qwen-turbo",
             openai_api_key="sk-a073a0942a91406e85604f9a5f8e7664",
             openai_api_base="https://dashscope.aliyuncs.com/compatible-mode/v1",
             temperature=0,
@@ -57,7 +59,7 @@ embedding_filter = EmbeddingsRedundantFilter(embeddings=embeddings)
 
 # 把三步串起来
 pipeline = DocumentCompressorPipeline(
-    compressors=[extractor, filter, embedding_filter]
+    transformers=[extractor, filter, embedding_filter]
 )
 
 # 最终检索器 = 原始检索 + 3步压缩
